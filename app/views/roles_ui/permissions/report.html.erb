@@ -1,0 +1,27 @@
+<% title t('.title', :default => t('helpers.titles.permission_report', :default => 'Permission report')) %>
+
+<p class="text-success"><%= t('.action_is_allowed') %></p>
+<p class="text-warning"><%= t('.action_is_allowed_with_some conditions') %></p>
+<p class="text-error"><%= t('.action_is_not_allowed') %></p>
+<table class="table table-striped table-bordered" id="roles_ui_report">
+  <tr>
+    <th><%= t('.resourse') %></th>
+    <% RolesUi::Role.available_roles.each do |ar| %>
+      <th><%= ar %></th>
+    <% end %>
+  </tr>
+  <% @resources.each do |res| %>
+    <tr>
+      <td><%= res %></td>
+      <% RolesUi::Role.available_roles.each do |ar| %>
+        <td>
+          <% role = RolesUi::Role.find_by_name(ar) %>
+          <% role.permissions.where(:resource => res.to_s).each do |p| %>
+            <span <%= permission_classes(p) %>><%= p.description %></span><br/>
+          <% end %>
+        </td>
+      <% end %>
+    </tr>
+  <% end %>
+</table>
+<%= link_to t('.cancel', :default => t("helpers.links.cancel")), roles_index_attrs, :class => 'btn' %>

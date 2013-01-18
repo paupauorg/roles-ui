@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for?(:title) ? yield(:title) : "Untitled" %></title>
+    <%= stylesheet_link_tag 'roles_ui/application' %>
+    <%= javascript_include_tag 'roles_ui/application' %>
+    <%= csrf_meta_tag %>
+    <%= yield(:head) %>
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <%= link_to 'Roles UI', roles_index_attrs, :class => 'brand' %>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li><%= link_to t('home'), send(RolesUi.home_path) %></li>
+              <li><%= link_to t('roles'), roles_index_attrs %></li>
+              <li><%= link_to t('permissions_report'), permissions_report_attrs %></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <%= content_tag :div, content_tag(:h1, yield(:title)), :class => 'page-header' if show_title? %>
+
+      <% flash.each do |name, msg| %>
+        <%= alert_block(msg, alert_type(name)) %>
+      <% end %>
+
+      <%= yield %>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+<div class="fields nested-fields permission">
+  <div class="clearfix">
+    <div class="pull-left">
+      <%= link_to_remove_fields t('.destroy_permission'), f %>
+    </div>
+    <div class="pull-left">
+      <%= f.input :name %>
+    </div>
+    <div class="pull-left">
+      <%= f.input :resource, collection: RolesUi::Permission.available_resources %>
+    </div>
+    <div class="pull-left">
+      <%= f.input :condition, collection: Ability.all_conditions.map{ |c|  [c.to_s.humanize, c]} %>
+    </div>
+    <div class="pull-left">
+      <%= f.input :priority, :input_html => { :class => 'narrow' } %>  
+    </div>
+    <div class="pull-left">
+      <%= f.input :cannot %>
+    </div>
+  </div>
+</div>

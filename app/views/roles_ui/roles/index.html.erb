@@ -1,0 +1,38 @@
+<%- model_class = RolesUi::Role -%>
+<% title t('.title', :default => model_class.model_name.human.pluralize) %>
+
+<table class="table table-striped roles" id="roles_ui_index">
+  <thead>
+    <tr>
+      <th><%= model_class.human_attribute_name(:id) %></th>
+      <th><%= model_class.human_attribute_name(:name) %></th>
+      <th><%= t('.permissions') %></th>
+      <th class="actions"><%=t '.actions', :default => t("helpers.actions") %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @roles.each do |role| %>
+      <tr>
+        <td><%= link_to role.id, { controller: 'roles_ui/roles', action: :show, id: role.id } %></td>
+        <td><%= role.name %></td>
+        <td class="text-info"><small><%= role.permissions.map{ |p| "#{'cannot' if p.cannot} #{p.name} #{p.resource}" }.join(', ') %></small></td>
+        <td>
+          <%= link_to t('.edit', :default => t("helpers.links.edit")),
+                      { controller: 'roles_ui/roles', action: :edit, id: role.id },
+                      :class => 'btn btn-mini' %>
+          <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
+                      { controller: 'roles_ui/roles', action: :destroy, id: role.id },
+                      :method => :delete,
+                      :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
+                      :class => 'btn btn-mini btn-danger' %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to t('.new', :default => t("helpers.links.new")),
+            roles_new_attrs,
+            :class => 'btn btn-primary' %>
+
+<%= link_to t('.report'), permissions_report_attrs, :class => 'btn' %>

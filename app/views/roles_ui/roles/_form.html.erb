@@ -1,0 +1,17 @@
+<%= javascript_include_tag 'roles_ui/application' if RolesUi.custom_layout? %>
+<%= simple_form_for @role, :url => roles_form_attrs(@role), :html => { :class => 'form-horizontal', :id => 'roles_ui_form' } do |f| %>
+  <%= f.input :name %>
+  <p><strong><%= t('.permissions') %>:</strong></p>
+
+  <%= f.simple_fields_for :permissions do |builder| %>
+    <%= render 'permission_fields', :f => builder %>
+  <% end %>
+
+  <p><%= link_to_add_fields t('.add_permission'), f, :permissions, :class => 'btn btn-mini btn-success' %></p>
+
+  <div class="form-actions">
+    <%= f.submit nil, :class => 'btn btn-primary' %>
+    <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+                roles_index_attrs, :class => 'btn' %>
+  </div>
+<% end %>

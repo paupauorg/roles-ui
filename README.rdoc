@@ -1,0 +1,184 @@
+=  Roles UI
+
+Roles UI is a graphic interface library for Ruby on Rails which provide ability to manage roles and permissions in real time for applications which use Cancan.
+
+== Getting Started
+
+Roles UI is an Rails engine so it has own namespace. You can reach Roles UI /roles_ui.
+Roles UI consist of two main entity -- +Role+ and +Permission+. Each +Role+ may have a permission set. Roles belongs to users. Roles UI extend your User model so you needn't create this association.
+By default Roles UI configured on work with User model.
+
+We assume that you use +devise+ gem and your +User+ model has +admin+ boolean attribute or you can provide admin access via role.
+
+== Installation
+
+In <b>Rails 3</b>, add this to your Gemfile and run the +bundle+ command.
+
+  # Gemfile
+  gem 'roles_ui', git: 'git@github.com:paupauorg/roles-ui.git'
+
+Roles UI works with Cancan and devise.
+
+Before using run:
+
+  rake roles_ui_engine:install:migrations
+
+This task copy migrations from Roles UI to your application. Don't forget to run migrations:
+
+  rake db:migrate
+
+And last step is creating configuration files: +app/models/ability.rb+ and +config/initializers/roles_ui.rb+
+
+  rails generate roles_ui:install
+
+== Configuration
+
+Add to your +config/routes.rb+ file next string:
+
+  # config/routes.rb
+  mount_roles_ui
+
+It mounts engine routes to your application.
+
+After creating configuration files you can setup Roles UI as you prefer:
+
+* You can specify which model is an user model. By default we use +User+, but you can choice any model from your app.
+
+    # config/initializers/roles_ui.rb
+    config.user_classes = ['User']
+
+  More of that you can add a few models names.
+
+    # config/initializers/roles_ui.rb
+    config.user_classes = ['BackendUser', 'TrustedUser', 'User']
+
+* You can choose a method that will be provide admin credentials. By default we use a method which checks a boolean attribute +admin+ in the user model. But you can define a role instead:
+
+    # config/initializers/roles_ui.rb
+    config.admin_roles = :admin
+
+  or array of roles:
+
+    # config/initializers/roles_ui.rb
+    config.admin_roles = [:admin, :backend_manager]
+
+  The user model has extension which add a +admin?+ method. No matter will you use the attribute or roles for authorizing this method will return the correct value.
+* You can customize views. All you have to do is create view files in directory +app/views/roles_ui/roles+
+  If you want to use an application layout instead a cute Roles UI layout you must uncomment (or add) in initializer file:
+
+    # config/initializers/roles_ui.rb
+    config.engine_layout = 'application'
+
+  In example above we assume your app consist 'application' layout
+
+* You can specify a home path for 'Home' item in the top menu of Roles UI interface. By default it is :roles_ui_path.
+    # config/initializers/roles_ui.rb
+    config.home_path = :root_path
+  or
+    # config/initializers/roles_ui.rb
+    config.home_path = :root_url
+
+== Adding a role
+
+Roles UI provides a few methods for managing roles and permissions. Main is +add_role+. You can use an object @role as attribute:
+
+  role = RolesUi::Role.create(name: :file_manager)
+  @user.add_role(role)
+
+or just a symbol name of the role:
+
+  RolesUi::Role.create(name: :file_manager)
+  @user.add_role(:file_manager)
+
+Also you can create role via web interface. Just go to your_site/roles_ui and press +New+ button. Set the roles name and add permissions.
+
+== Permissions
+
+Each role may have own permission set. Each permission consist of a few attribute:
+* +name+ is action which you want allow or deny, e.g. 'manage', 'read', 'upload' or something else
+* +cannot+ reverses meaning of permission and will be processing in +Cancan+ as +cannot+ method.
+* +resource+ is scope for your action. You can use +:all+ in the select if you want provide privileges for all resource. Choosing +:all+ don't provides access to Roles UI objects.
+* +condition+ You can specify your own conditions in the +ability.rb+ file. Read details in the Custom conditions section.
+* +priority+ set a sequence for permissions checking. In +ability.rb+ we can combine abilities:
+ # ability.rb
+ can :manage, Project
+ cannot :destroy, Project
+
+If you want to get processing like it shown above you must set higher priority for 'destroy' permission:
+
+  role = RolesUi::Role.create(name: 'some_role')
+  => #<RolesUi::Role id: 31, name: "some_role">
+  role.permissions << RolesUi::Permission.create(name: :manage, resource: Project, priority: 1)
+  => [#<RolesUi::Permission id: 208, role_id: 31, name: :manage, resource: "Project", condition: nil, cannot: nil, priority: 1 >]
+  role.permissions << RolesUi::Permission.create(name: :destroy, resource: Project, priority: 2, cannot: true)
+  => [#<RolesUi::Permission id: 208, role_id: 31, name: :manage, resource: "Project", condition: nil, cannot: nil, priority: 1 >, #<RolesUi::Permission id: 209, role_id: 31, name: :destroy, resource: "Project", condition: nil, cannot: true, priority: 2 >]
+
+You can use +add_permission+ method:
+
+  add_permission(name, options={})
+
+This method accepts a hash with permission attributes. Return a created permission or existed if it possible.
+
+  role = RolesUi::Role.create(name: 'some_role')
+  => #<RolesUi::Role id: 31, name: "some_role">
+  role.add_permission(:manage, resource: Project, priority: 1)
+  => #<RolesUi::Permission id: 216, role_id: 32, name: :manage, resource: "Project", condition: nil, cannot: nil, priority: 1 >
+  role.add_permission(:destroy, resource: Project, priority: 2, cannot: true)
+  => #<RolesUi::Permission id: 217, role_id: 32, name: :destroy, resource: "Project", condition: nil, cannot: true, priority: 2 >
+
+== Custom conditions
+
+You can define conditions same way like in +cancan+. There is custom condition  +ability.rb+ file:
+
+  # ability.rb
+  # custom conditions
+  def custom_conditions(condition=nil)
+    send(condition.to_sym) if condition
+  end
+
+This method should accept a string  and trying to call method with matched name.
+Method name must be started from 'if_'. Returns +nil+ when the permission has no condition.
+
+For example, usual restrictions:
+
+  # ability.rb
+  can :read, Project, :released => true
+  can :read, Project, :preview => true
+
+And custom conditions for these restrictions:
+
+  # ability.rb
+  def if_released_true; { released: true } end
+  def if_preview_true; { preview: true } end
+
+== Permission report
+
+Permissions report provide you friendly interface for roles and permissions in your system. You can easy see what exactly each role's owner can do with one or other resource.
+All strings which describe actions have one of three colors that indicate on the action's permission: red (action is not allowed), yellow (action allowed with some restrictions or conditions) and green (action allowed).
+Permissions report can be reached via menu item if you use the Roles UI layout. Or via +/permissions_report+ link.
+
+== Testing
+
+In this gem we use +rspec+, +spork+ and +guard+ :
+
+https://github.com/rspec/rspec
+https://github.com/sporkrb/spork
+https://github.com/guard/guard
+
+Before testing you must to run
+  cd spec/dummy
+  db:test:prepare
+
+It creates a current db-structure in the test db. After that run guard:
+  cd ../..
+  guard -c
+
+
+== Contributing
+
+We encourage you to contribute to Roles UI!  ...
+
+
+== License
+
+Roles UI is released under the {MIT License}[https://raw.github.com/paupauorg/roles-ui/master/MIT-LICENSE].

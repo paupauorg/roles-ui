@@ -1,0 +1,8 @@
+Description:
+    This generator will create all the necessary files to use and customize Roles UI.
+
+Example:
+    rails generate roles_ui:install
+
+    This will create:
+        what/will/it/create
