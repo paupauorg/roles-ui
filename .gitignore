@@ -1,9 +1,9 @@
 *~
-.DS_Store
+*.DS_Store
+.rvmrc
 .bundle/
 log/*.log
 pkg/
-spec/dummy/.DS_Store
 spec/dummy/.bundle
 spec/dummy/.gitignore
 spec/dummy/.git/
