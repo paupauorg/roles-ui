@@ -15,7 +15,7 @@ We assume that you use +devise+ gem and your +User+ model has +admin+ boolean at
 In <b>Rails 3</b>, add this to your Gemfile and run the +bundle+ command.
 
   # Gemfile
-  gem 'roles_ui', git: 'git@github.com:paupauorg/roles-ui.git'
+  gem 'roles_ui', git: 'git://github.com/paupauorg/roles-ui.git'
 
 Roles UI works with Cancan and devise.
 
