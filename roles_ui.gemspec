@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'simple_form'
   s.add_dependency 'jquery-rails'
   s.add_dependency 'jquery-ui-rails'
-  s.add_dependency 'twitter-bootstrap-rails'
+  s.add_dependency 'twitter-bootstrap-rails', '2.2.6'
   s.add_dependency 'less-rails'
   s.add_dependency 'i18n'
 
